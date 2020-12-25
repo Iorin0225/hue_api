@@ -1,8 +1,6 @@
 # HueApi
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/hue_api`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+This manage Philips Hue Lights (and a Bridge) using their REST API.
 
 ## Installation
 
@@ -22,7 +20,94 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+NOTE: Before use this, you need to join same network with your Hue Bridge.
+
+### 1. Initializing
+
+This has a client to manage whole things. 
+
+At first time you would faile the creating client with this error. 
+
+```rb
+> client = HueApi::Client.new
+RuntimeError: Please press Link Button on the Hue Bridge.
+```
+
+It's because of Hue's security system. The Hue Bridge does not allow other's access at normal. You can open the block just one time with pressing the Link Button on the Bridge
+
+So, as the message said, please press the link button on your bridge.
+And then, the client can connect with your bridge.
+
+```rb
+# This would success after pressing link button.
+> client = HueApi::Client.new
+=> #<HueApi::Client:...
+```
+
+### 2. Load resources
+
+You can collect all resources which connecting with the bridge with `client.load_resources`.
+
+```rb
+> client.load_resources
+=> true
+```
+
+And then it's ready to use.
+
+### 3. See resources
+
+Hue API's data is a bit difficult for human to read because it uses some IDs and we can't see it on Official Philips Hue App.
+`HueApi::Client` has some functions to see the resources easily.
+
+```rb
+> client.light_names
+=>  ["Hue color lamp 1", "Hue color lamp 2", "Hue color lamp 3"]
+
+> client.group_names
+=> ["living room", "kids room"]
+
+> client.find_light_by_name('Hue color lamp 1')
+=> #<HueApi::Light:...
+
+> client.find_group_by_name('living room')
+=> #<HueApi::Group:...
+
+> client.client.scenes_group_map  
+=> {"living room"=>
+  [{"id"=>"vQFvInRgWiCDumj", "name"=>"Savanna sunset"},
+   {"id"=>"crHSbP0PrrJ8SuI", "name"=>"Tropical twilight"},
+   {"id"=>"KgyZoIzmXlSta3s", "name"=>"Arctic aurora"},
+   ...
+
+> client.available_scenes('living room')
+=> [{"id"=>"vQFvInRgWiCDumj", "name"=>"Savanna sunset"},
+ {"id"=>"crHSbP0PrrJ8SuI", "name"=>"Tropical twilight"},
+ {"id"=>"KgyZoIzmXlSta3s", "name"=>"Arctic aurora"},
+
+```
+
+### 3. Change the state of the light/group
+
+`HueApi::Client`, `HueApi::Light` and `HueApi::Group` has some functions to change its state easily.
+
+```rb
+
+# Set Scene by name
+> client.set_scene_to_group('living room', 'Spring blossom')
+
+# Change Light's state with name
+> client.find_light_by_name('Hue color lamp 1').turn_on
+> client.find_light_by_name('Hue color lamp 1').alert
+> client.find_light_by_name('Hue color lamp 1').effect('colorloop')
+
+# Change Group's state with name
+> client.find_group_by_name('living room').turn_on
+> client.find_group_by_name('living room').alert
+> client.find_group_by_name('living room').effect('colorloop')
+
+
+```
 
 ## Development
 
